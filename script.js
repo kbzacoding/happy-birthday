@@ -28,7 +28,6 @@ const SOUNDS = {
   'https://s3-us-west-2.amazonaws.com/s.cdpn.io/605876/horn.mp3') };
 
 
-
 const EYES = document.querySelector('.cake__eyes');
 const BLINK = eyes => {
   gsap.set(eyes, { scaleY: 1 });
@@ -73,28 +72,23 @@ function createConfetti() {
 
 
 const FROSTING_TL = () =>
-timeline().
-to(
+timeline().to(
 '#frosting',
 {
   scaleX: 1.015,
   duration: 0.25 },
 
-0).
-
-to(
+0).to(
 '#frosting',
 {
   scaleY: 1,
   duration: 1 },
 
-0).
-
-to(
+0).to(
 '#frosting',
 {
-  duration: 1,
-  morphSVG: '.cake__frosting--end' },
+  scale: 1.2,
+  duration: 1 },
 
 0);
 
@@ -102,44 +96,31 @@ const SPRINKLES_TL = () =>
 timeline().to('.cake__sprinkle', { scale: 1, duration: 0.06, stagger: 0.02 });
 
 const SPIN_TL = () =>
-timeline().
-set('.cake__frosting-patch', { display: 'block' }).
-to(
+timeline().set('.cake__frosting-patch', { display: 'block' }).to(
 ['.cake__frosting--duplicate', '.cake__sprinkles--duplicate'],
 { x: 0, duration: 1 },
-0).
-
-to(
+0).to(
 ['.cake__frosting--start', '.cake__sprinkles--initial'],
 { x: 65, duration: 1 },
-0).
-
-to('.cake__face', { duration: 1, x: -48.82 }, 0);
+0).to('.cake__face', { duration: 1, x: -48.82 }, 0);
 
 const flickerSpeed = 0.1;
-const FLICKER_TL = timeline().
-to('.candle__flame-outer', {
+const FLICKER_TL = timeline().to('.candle__flame-outer', {
   duration: flickerSpeed,
   repeat: -1,
   yoyo: true,
-  morphSVG: '#flame-outer' }).
-
-to(
+  scale: 0.5, // Reemplazo de morphSVG por una animación simple de escala
+}).to(
 '.candle__flame-inner',
 {
   duration: flickerSpeed,
   repeat: -1,
   yoyo: true,
-  morphSVG: '#flame-inner' },
-
-0);
-
+  scale: 0.5, // Reemplazo similar para el elemento flame-inner
+}, 0);
 
 const SHAKE_TL = () =>
-timeline({ delay: 0.5 }).
-set('.cake__face', { display: 'none' }).
-set('.cake__face--straining', { display: 'block' }).
-to(
+timeline({ delay: 0.5 }).set('.cake__face', { display: 'none' }).set('.cake__face--straining', { display: 'block' }).to(
 '.birthday-button',
 {
   onComplete: () => {
@@ -151,9 +132,7 @@ to(
   repeat: 13,
   duration: 0.1 },
 
-0).
-
-to(
+0).to(
 '.cake__candle',
 {
   onComplete: () => {
@@ -172,9 +151,7 @@ to(
 0.2);
 
 const FLAME_TL = () =>
-timeline({}).
-to('.cake__candle', { '--flame': 1, stagger: 0.2, duration: 0.1 }).
-to('body', { '--flame': 1, '--lightness': 5, duration: 0.2, delay: 0.2 });
+timeline({}).to('.cake__candle', { '--flame': 1, stagger: 0.2, duration: 0.1 }).to('body', { '--flame': 1, '--lightness': 5, duration: 0.2, delay: 0.2 }).to('.cake__candle', { scaleY: 1, duration: 0.2, repeat: 1, yoyo: true }); // Ajusté la animación sin morphSVG
 
 const LIGHTS_OUT = () =>
 timeline().to('body', {
@@ -243,33 +220,18 @@ const MASTER_TL = timeline({
     delayedCall(2, RESET);
     BTN.removeAttribute('disabled');
   },
-  paused: true }).
-
-set('.birthday-button__cake', { display: 'block' }).
-to('.birthday-button', {
+  paused: true }).set('.birthday-button__cake', { display: 'block' }).to('.birthday-button', {
   onStart: () => {
     SOUNDS.CHEER.play();
     createConfetti();
   },
   scale: 1,
-  duration: 0.2 }).
-
-to('.char', { '--char-sat': 70, '--char-light': 65, duration: 0.2 }, 0).
-to('.char', {
+  duration: 0.2 }).to('.char', { '--char-sat': 70, '--char-light': 65, duration: 0.2 }, 0).to('.char', {
   onStart: () => SOUNDS.HORN.play(),
   delay: 0.75,
   y: () => gsap.utils.random(-100, -200),
   x: () => gsap.utils.random(-50, 50),
-  duration: () => gsap.utils.random(0.5, 1) }).
-
-to('.char', { opacity: 0, duration: 0.25 }, '>-0.5').
-add(FROSTING_TL()).
-add(SPRINKLES_TL()).
-add(SPIN_TL()).
-add(SHAKE_TL()).
-add(FLAME_TL(), 'FLAME_ON').
-to('.glowing-text', { opacity: 1, duration: 1.5 }, '>-0.5').
-add(LIGHTS_OUT(), 'LIGHTS_OUT');
+  duration: () => gsap.utils.random(0.5, 1) }).to('.char', { opacity: 0, duration: 0.25 }, '>-0.5').add(FROSTING_TL()).add(SPRINKLES_TL()).add(SPIN_TL()).add(SHAKE_TL()).add(FLAME_TL(), 'FLAME_ON').to('.glowing-text', { opacity: 1, duration: 1.5 }, '>-0.5').add(LIGHTS_OUT(), 'LIGHTS_OUT');
 
 SOUNDS.TUNE.onended = SOUNDS.MATCH.onended = () => MASTER_TL.play();
 MASTER_TL.addPause('FLAME_ON', () => SOUNDS.MATCH.play());
