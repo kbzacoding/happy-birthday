@@ -6,8 +6,20 @@ window;
 
 Splitting();
 
+
+// === Smoothing defaults & reduced-motion handling (added) ===
+try {
+  gsap.defaults({ ease: 'power2.out', overwrite: 'auto' });
+} catch(e) {}
+const MEDIA_Q = window.matchMedia('(prefers-reduced-motion: reduce)');
+const REDUCED_MOTION = MEDIA_Q && MEDIA_Q.matches;
+if (REDUCED_MOTION) {
+  try { gsap.globalTimeline.timeScale(0.7); } catch(e) {}
+}
+
 const BTN = document.querySelector('.birthday-button__button');
 const SOUNDS = {
+
   CHEER: new Audio(
   'https://s3-us-west-2.amazonaws.com/s.cdpn.io/605876/cheer.mp3'),
 
@@ -212,7 +224,7 @@ const RESET = () => {
   set('.cake__candle', { scaleY: 0, transformOrigin: '50% 100%' });
 };
 RESET();
-const MASTER_TL = timeline({
+const MASTER_TL = timeline({ defaults: { ease: 'power2.out' },
   onStart: () => {
     SOUNDS.ON.play();
   },
@@ -249,3 +261,10 @@ const toggleAudio = () => {
 };
 
 document.querySelector('#volume').addEventListener('input', toggleAudio);
+
+
+// === Audio autoplay policy guard (added) ===
+['CHEER','MATCH','TUNE','ON','BLOW','POP','HORN'].forEach(k=>{ try{ SOUNDS[k].volume = (typeof SOUNDS[k].volume === 'number') ? SOUNDS[k].volume : 1; }catch(e){} });
+document.addEventListener('click', () => {
+  Object.values(SOUNDS).forEach(a => { try { a.muted = false; } catch(e){} });
+}, { once: true, passive: true });
