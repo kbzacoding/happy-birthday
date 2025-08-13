@@ -135,103 +135,7 @@ const SHAKE_TL = () =>
 timeline({ delay: 0.5 }).set('.cake__face', { display: 'none' }).set('.cake__face--straining', { display: 'block' }).to(
 '.birthday-button',
 {
-  onComplete: () => {
-    set('.cake__face--straining', { display: 'none' });
-    set('.cake__face', { display: 'block' });
-  },
-  x: 1,
-  y: 1,
-  repeat: 13,
-  duration: 0.1 },
-
-0).to(
-'.cake__candle',
-{
-  onComplete: () => {
-    FLICKER_TL.play();
-  },
-  onStart: () => {
-    SOUNDS.POP.play();
-    delayedCall(0.2, () => SOUNDS.POP.play());
-    delayedCall(0.4, () => SOUNDS.POP.play());
-  },
-  ease: 'Elastic.easeOut',
-  duration: 0.2,
-  stagger: 0.2,
-  scaleY: 1 },
-
-0.2);
-
-const FLAME_TL = () =>
-timeline({}).to('.cake__candle', { '--flame': 1, stagger: 0.2, duration: 0.1 }).to('body', { '--flame': 1, '--lightness': 5, duration: 0.2, delay: 0.2 }).to('.cake__candle', { scaleY: 1, duration: 0.2, repeat: 1, yoyo: true }); // Ajusté la animación sin morphSVG
-
-const LIGHTS_OUT = () =>
-timeline().to('body', {
-  onStart: () => {
-    SOUNDS.BLOW.play();
-  },
-  delay: 0.5,
-  '--lightness': 0, 
-  duration: 0.3,
-});
-
-
-const RESET = () => {
-  
-  const confettiContainer = document.querySelector('.confetti-container');
-  if(confettiContainer) {
-    confettiContainer.innerHTML = '';
-  }
-
-  set('.char', {
-    '--hue': () => Math.random() * 360,
-    '--char-sat': 0,
-    '--char-light': 0,
-    x: 0,
-    y: 0,
-    opacity: 1 });
-
-  set('body', {
-    '--frosting-hue': Math.random() * 360,
-    '--glow-saturation': 50,
-    '--glow-lightness': 35,
-    '--glow-alpha': 0.4,
-    '--transparency-alpha': 0,
-    '--flame': 0 });
-
-  set('.cake__candle', { '--flame': 0 });
-  to('body', {
-    '--lightness': 50,
-    duration: 0.25 });
-
-  set('.cake__frosting--end', { opacity: 0 });
-  set('#frosting', {
-    transformOrigin: '50% 10%',
-    scaleX: 0,
-    scaleY: 0 });
-
-  set('.cake__frosting-patch', { display: 'none' });
-  set(['.cake__frosting--duplicate', '.cake__sprinkles--duplicate'], { x: -65 });
-  set('.cake__face', { x: -110 });
-  set('.cake__face--straining', { display: 'none' });
-  set('.cake__sprinkle', {
-    '--sprinkle-hue': () => Math.random() * 360,
-    scale: 0,
-    transformOrigin: '50% 50%' });
-
-  set('.birthday-button', { scale: 0.6, x: 0, y: 0 });
-  set('.birthday-button__cake', { display: 'none' });
-  set('.cake__candle', { scaleY: 0, transformOrigin: '50% 100%' });
-};
-RESET();
-const MASTER_TL = timeline({
-  onStart: () => {
-    SOUNDS.ON.play();
-  },
-  onComplete: () => {
-    delayedCall(2, RESET);
-    BTN.removeAttribute('disabled');
-  },
+  onComplete: () => { scheduleResetAligned(); },
   paused: true }).set('.birthday-button__cake', { display: 'block' }).to('.birthday-button', {
   onStart: () => {
     SOUNDS.CHEER.play();
@@ -261,3 +165,22 @@ const toggleAudio = () => {
 };
 
 document.querySelector('#volume').addEventListener('input', toggleAudio);
+
+
+// === Align animation reset to audio end (added) ===
+function scheduleResetAligned() {
+  const end = () => { try { RESET(); } catch(e) {} try { BTN && BTN.removeAttribute('disabled'); } catch(e) {} };
+  try {
+    const tune = SOUNDS && SOUNDS.TUNE;
+    if (!tune) return end();
+    const run = () => {
+      const dur = Number.isFinite(tune.duration) ? tune.duration : 0;
+      const cur = Number.isFinite(tune.currentTime) ? tune.currentTime : 0;
+      const remaining = Math.max(0, dur - cur);
+      setTimeout(end, Math.max(0, Math.round(remaining * 1000)));
+    };
+    if (Number.isFinite(tune.duration) && tune.duration > 0) run();
+    else tune.addEventListener('loadedmetadata', run, { once: true });
+    tune.addEventListener('ended', end, { once: true });
+  } catch(e) { end(); }
+}
