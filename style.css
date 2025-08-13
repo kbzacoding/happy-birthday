@@ -261,27 +261,3 @@ label svg:nth-of-type(1) {
   top: 0;
   left: -5px;
 }
-
-
-/* === Performance & motion hints (added) === */
-.birthday-button,
-.birthday-button__button,
-.birthday-button__cake,
-.cake__candle,
-.cake__sprinkle,
-.cake__eye-body,
-.cake__eye-pupil,
-.cake__mouth-opening,
-.cake__tongue,
-.confetti-container {
-  will-change: transform, opacity, filter;
-  transform: translateZ(0);
-}
-@media (prefers-reduced-motion: reduce) {
-  * {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-    scroll-behavior: auto !important;
-  }
-}
